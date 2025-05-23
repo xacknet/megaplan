@@ -1,0 +1,28 @@
+{% extends "core/base.html" %}
+{% load bootstrap5 %}
+
+{% block title %}{{ title }} - AgroExpert{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card border-danger">
+        <div class="card-header bg-danger text-white">
+            <h2 class="card-title">{{ title }}</h2>
+        </div>
+        <div class="card-body">
+            <p>Are you sure you want to delete the following agrotechnical operation?</p>
+            <ul>
+                <li><strong>Field:</strong> {{ operation.field.name }}</li>
+                <li><strong>Operation Type:</strong> {{ operation.operation_type.name }}</li>
+                <li><strong>Date:</strong> {{ operation.operation_date|date:"Y-m-d" }}</li>
+                <li><strong>Description:</strong> {{ operation.description|truncatewords:30 }}</li>
+            </ul>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                <a href="{% url 'field_detail' field.pk %}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

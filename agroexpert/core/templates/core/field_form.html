@@ -1,0 +1,136 @@
+{% extends "core/base.html" %}
+{% load bootstrap5 %}
+
+{% block title %}{{ title }} - AgroExpert{% endblock %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+    <style>
+        #map { height: 500px; }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ title }}</h2>
+    <form method="post" id="fieldForm">
+        {% csrf_token %}
+        {% bootstrap_form form %}
+        
+        <div class="mb-3">
+            <label for="map" class="form-label">Field Geometry</label>
+            <div id="map"></div>
+            <small class="form-text text-muted">
+                Use the polygon tool on the map to draw your field.
+                {% if form.instance.pk and form.instance.geometry %}
+                You are editing an existing field. Clear the current drawing to draw a new one.
+                {% endif %}
+            </small>
+        </div>
+
+        <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-primary">
+                {% if field_instance %}Update Field{% else %}Create Field{% endif %}
+            </button>
+            <a href="{% if field_instance %}{% url 'field_detail' field_instance.pk %}{% else %}{% url 'field_list' %}{% endif %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Initialize the map
+            var map = L.map('map').setView([20, 0], 2); // Default view
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            var drawnItems = new L.FeatureGroup();
+            map.addLayer(drawnItems);
+
+            var drawControl = new L.Control.Draw({
+                edit: {
+                    featureGroup: drawnItems,
+                    poly: {
+                        allowIntersection: false
+                    }
+                },
+                draw: {
+                    polygon: {
+                        allowIntersection: false,
+                        showArea: true,
+                        shapeOptions: {
+                            color: 'blue'
+                        }
+                    },
+                    polyline: false,
+                    rectangle: false,
+                    circle: false,
+                    marker: false,
+                    circlemarker: false
+                }
+            });
+            map.addControl(drawControl);
+
+            var geometryInput = document.getElementById('id_geometry');
+
+            // Handle existing geometry for editing
+            {% if form.initial.geometry %}
+                try {
+                    var initialGeoJson = JSON.parse('{{ form.initial.geometry|escapejs }}');
+                    var initialLayer = L.geoJSON(initialGeoJson, {
+                        style: function (feature) {
+                            return {color: 'blue'};
+                        }
+                    });
+                    drawnItems.addLayer(initialLayer);
+                    map.fitBounds(initialLayer.getBounds()); // Zoom to the existing geometry
+                } catch (e) {
+                    console.error("Error parsing initial GeoJSON:", e);
+                    // Fallback if GeoJSON is invalid
+                    map.setView([20,0], 2);
+                }
+            {% else %}
+                 map.setView([20,0], 2); // Default view if no initial geometry
+            {% endif %}
+
+
+            map.on(L.Draw.Event.CREATED, function (event) {
+                var layer = event.layer;
+                // Clear previously drawn items for simplicity (allow only one field polygon)
+                drawnItems.clearLayers(); 
+                drawnItems.addLayer(layer);
+                
+                // Convert layer to GeoJSON and update the hidden form field
+                var geoJson = layer.toGeoJSON();
+                geometryInput.value = JSON.stringify(geoJson.geometry); // Store only the geometry part
+            });
+
+            map.on(L.Draw.Event.EDITED, function (event) {
+                var layers = event.layers;
+                layers.eachLayer(function (layer) {
+                    var geoJson = layer.toGeoJSON();
+                    geometryInput.value = JSON.stringify(geoJson.geometry);
+                });
+            });
+            
+            map.on(L.Draw.Event.DELETED, function (event) {
+                // If layers are deleted, clear the geometry input
+                // This example assumes only one polygon is drawn. If multiple are allowed and one is deleted,
+                // you'd need more complex logic to update the GeoJSON.
+                if (drawnItems.getLayers().length === 0) {
+                    geometryInput.value = '';
+                }
+            });
+
+            // Optional: If you want to ensure map is resized correctly if it was hidden initially (e.g. in tabs)
+            // setTimeout(function(){ map.invalidateSize()}, 400);
+        });
+    </script>
+{% endblock %}

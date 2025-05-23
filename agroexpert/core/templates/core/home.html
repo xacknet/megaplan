@@ -1,0 +1,66 @@
+{% extends "core/base.html" %}
+{% load bootstrap5 %}
+
+{% block title %}Welcome - AgroExpert{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="px-4 py-5 my-5 text-center">
+        <img class="d-block mx-auto mb-4" src="https://placehold.co/100x100/007bff/white?text=AE" alt="AgroExpert Logo Placeholder" width="72" height="auto">
+        <h1 class="display-5 fw-bold">Welcome to AgroExpert</h1>
+        <div class="col-lg-6 mx-auto">
+            <p class="lead mb-4">
+                Your digital assistant for modern field management. Monitor your fields, track operations, 
+                analyze NDVI data, and generate insightful reports to optimize your agricultural practices.
+            </p>
+            {% if user.is_authenticated %}
+                <p>You are logged in as <strong>{{ user.username }}</strong> (Role: {{ user.profile.get_role_display|default:"N/A" }}).</p>
+                <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                    <a href="{% url 'field_list' %}" class="btn btn-primary btn-lg px-4 gap-3">View My Fields</a>
+                    <a href="{% url 'report_dashboard' %}" class="btn btn-outline-secondary btn-lg px-4">Go to Reports</a>
+                </div>
+            {% else %}
+                <p class="lead mb-4">
+                    Please log in to manage your fields or register to get started.
+                </p>
+                <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                    <a href="{% url 'login' %}" class="btn btn-primary btn-lg px-4 gap-3">Login</a>
+                    <a href="{% url 'register' %}" class="btn btn-outline-secondary btn-lg px-4">Register</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if user.is_authenticated %}
+    <div class="row mt-5">
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Field Management</h5>
+                    <p class="card-text">Create, view, and manage the geographical boundaries of your agricultural fields. Draw polygons directly on the map.</p>
+                    <a href="{% url 'field_list' %}" class="btn btn-success">Manage Fields</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Agrotechnical Journal</h5>
+                    <p class="card-text">Keep a detailed log of all operations performed on your fields, from planting to harvesting. Track costs and materials.</p>
+                     <a href="{% url 'field_list' %}" class="btn btn-success">View Field Journals</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">NDVI & Reports</h5>
+                    <p class="card-text">Analyze field health using NDVI data from Google Earth Engine. Download comprehensive reports in PDF and Excel formats.</p>
+                    <a href="{% url 'report_dashboard' %}" class="btn btn-success">View Reports</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

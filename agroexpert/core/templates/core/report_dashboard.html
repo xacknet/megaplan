@@ -1,0 +1,70 @@
+{% extends "core/base.html" %}
+{% load bootstrap5 %}
+
+{% block title %}{{ title }} - AgroExpert{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card text-center">
+                <div class="card-header">
+                    <h2 class="card-title">Analytics Overview</h2>
+                </div>
+                <div class="card-body">
+                    <h3>Total Cultivated Area: {{ total_area_hectares }} hectares</h3>
+                    <p class="text-muted">
+                        Note: Area calculation accuracy depends on the coordinate system of field geometries. 
+                        This calculation attempts to use a common projection (EPSG:3857) for consistency.
+                        For precise local measurements, ensure fields are drawn using accurate local projections.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Field Operations Reports</h3>
+                </div>
+                <div class="card-body">
+                    {% if fields_for_reports %}
+                        <p>Select a field to download its agrotechnical operations report:</p>
+                        <ul class="list-group">
+                            {% for field in fields_for_reports %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span><strong>{{ field.name }}</strong> (Owner: {{ field.owner.username }})</span>
+                                    <div>
+                                        <a href="{% url 'download_field_operations_excel' field.id %}" class="btn btn-outline-success btn-sm me-2" title="Download Excel Report">
+                                            <i class="bi bi-file-earmark-excel-fill"></i> Download Excel
+                                        </a>
+                                        <a href="{% url 'download_field_operations_pdf' field.id %}" class="btn btn-outline-danger btn-sm" title="Download PDF Report">
+                                            <i class="bi bi-file-earmark-pdf-fill"></i> Download PDF
+                                        </a>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="alert alert-info" role="alert">
+                            {% if user.profile.role == 'administrator' %}
+                                There are no fields in the system to generate reports for.
+                            {% else %}
+                                You do not own any fields to generate reports for. <a href="{% url 'field_create' %}" class="alert-link">Add a field now!</a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Bootstrap Icons CSS if you want to use icons like above -->
+{% block extra_head_icons %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+{% endblock %}
+
+{% endblock %}

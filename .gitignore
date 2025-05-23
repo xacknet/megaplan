@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.env
+env/
+venv/
+
+# Django
+*.log
+db.sqlite3
+*.sqlite3
+
+# Service Account Keys
+*_service_account_key.json
+service_account_key.json
+*.pem
+credentials.json
+
+# IDE specific
+.idea/
+.vscode/
+
+# Other
+*.DS_Store
+media/
+static_collected/ # If you use collectstatic into a folder named static_collected
+# Add other files and directories that should be ignored
+# For example, sensitive configuration files or large data files
+# config.local.yaml
+# large_dataset.csv

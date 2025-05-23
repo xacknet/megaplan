@@ -1,0 +1,42 @@
+{% extends "core/base.html" %}
+{% load bootstrap5 %}
+
+{% block title %}{{ title }} - AgroExpert{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">{{ title }}</h2>
+            <a href="{% url 'field_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle-fill me-1"></i> Add New Field
+            </a>
+        </div>
+        <div class="card-body">
+            {% if fields %}
+                <div class="list-group">
+                    {% for field in fields %}
+                        <a href="{% url 'field_detail' field.pk %}" class="list-group-item list-group-item-action flex-column align-items-start">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">{{ field.name }}</h5>
+                                <small class="text-muted">Owner: {{ field.owner.username }}</small>
+                            </div>
+                            <p class="mb-1 text-muted">{{ field.description|truncatewords:30|default:"No description available." }}</p>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info" role="alert">
+                    You have not created any fields yet. <a href="{% url 'field_create' %}" class="alert-link">Add one now!</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- For Bootstrap Icons -->
+{% block extra_head_icons %} 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+{% endblock %}
+
+{% endblock %}
